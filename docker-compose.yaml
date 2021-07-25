@@ -1,0 +1,12 @@
+version: "3"
+services:
+  pic-bot:
+    image: adevjoe/pic-bot:latest
+    container_name: pic-bot
+    volumes:
+      - ./gallery-dl.conf:/etc/gallery-dl.conf
+      - ./gallery-dl:/app/gallery-dl
+    environment:
+      - BOT_TOKEN=
+      - CHAT_ID=
+    restart: always
