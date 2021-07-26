@@ -5,7 +5,8 @@ services:
     container_name: pic-bot
     volumes:
       - ./.gallery-dl.conf:/etc/gallery-dl.conf
-      - ./gallery-dl:/app/gallery-dl
+      - ./gallery-dl:/gallery-dl
+      - ./cache:/root/.cache/gallery-dl
     environment:
       - BOT_TOKEN=
       - CHAT_ID=
