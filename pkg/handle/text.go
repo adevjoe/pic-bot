@@ -95,7 +95,12 @@ func Text(bot *tb.Bot, message *tb.Message) {
 	}
 
 	// send message
-	_, err = bot.SendAlbum(message.Sender, albums, &tb.SendOptions{ReplyTo: message})
+	err = bot.Delete(message)
+	if err != nil {
+		log.Info(message.Sender, "delete message error, %v", err)
+		return
+	}
+	_, err = bot.SendAlbum(message.Sender, albums)
 	if err != nil {
 		log.Info(message.Sender, "sent error, %v", err)
 		return
