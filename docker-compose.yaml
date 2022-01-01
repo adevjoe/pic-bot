@@ -9,6 +9,5 @@ services:
       - ./cache:/root/.cache/gallery-dl
     environment:
       - BOT_TOKEN=
-      - CHAT_ID=
       - WELCOME_MESSAGE=
     restart: always
