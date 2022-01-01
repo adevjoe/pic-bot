@@ -32,9 +32,6 @@ func main() {
 	b.Handle(tb.OnText, func(m *tb.Message) {
 		handle.Text(b, m)
 	})
-	b.Handle(tb.OnPhoto, func(m *tb.Message) {
-		handle.Photo(b, m)
-	})
 
 	b.Start()
 }

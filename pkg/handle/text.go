@@ -3,21 +3,25 @@ package handle
 import (
 	"fmt"
 	"github.com/adevjoe/pic-bot/pkg/utils"
+	"github.com/adevjoe/pic-bot/pkg/utils/log"
 	tb "gopkg.in/tucnak/telebot.v2"
-	"log"
 	url2 "net/url"
 	"os/exec"
 	"strings"
 )
 
 func Text(bot *tb.Bot, message *tb.Message) {
-	log.Printf("receive text: %s", message.Text)
+
+	log.Info(message.Sender, "receive text: %s", message.Text)
 	// parse url
 	url, err := url2.Parse(message.Text)
 	if err != nil {
 		errMsg := fmt.Sprintf("url %s is not valid", message.Text)
-		log.Print(errMsg)
-		_, _ = bot.Send(message.Sender, errMsg)
+		log.Info(message.Sender, errMsg)
+		_, err = bot.Send(message.Sender, errMsg)
+		if err != nil {
+			log.Info(message.Sender, "send error: %s", err)
+		}
 		return
 	}
 	url.RawQuery = ""
@@ -35,21 +39,29 @@ func Text(bot *tb.Bot, message *tb.Message) {
 	case strings.Contains(url.Host, "instagram"):
 		web = "Instagram"
 		break
+	default:
+		errMsg := fmt.Sprintf("url %s is not supported", message.Text)
+		log.Info(message.Sender, errMsg)
+		_, err = bot.Send(message.Sender, errMsg)
+		if err != nil {
+			log.Info(message.Sender, "send error: %s", err)
+		}
+		return
 	}
 
 	// exec gallery-dl
 	cmd := exec.Command("gallery-dl", url.String())
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("cmd.Run() failed with %s\n, cmd: %s", err, cmd.String())
+		log.Info(message.Sender, "cmd.Run() failed with %s\n, cmd: %s", err, cmd.String())
 		return
 	}
-	log.Printf("out: %s", out)
+	log.Info(message.Sender, "out: %s", out)
 
 	// get media
 	s := strings.Split(strings.TrimRight(string(out), "\n"), "\n")
 	if len(s) == 0 {
-		log.Printf("media is empty")
+		log.Info(message.Sender, "media is empty")
 		return
 	}
 
@@ -83,14 +95,10 @@ func Text(bot *tb.Bot, message *tb.Message) {
 	}
 
 	// send message
-	_, err = bot.SendAlbum(utils.Receiver, albums)
+	_, err = bot.SendAlbum(message.Sender, albums, &tb.SendOptions{ReplyTo: message})
 	if err != nil {
-		log.Printf("sent to receiver %s error, %v", utils.Receiver.Recipient(), err)
+		log.Info(message.Sender, "sent error, %v", err)
 		return
 	}
-	log.Printf("%s successful", message.Text)
-	_, _ = bot.Send(message.Sender, "投稿成功！", &tb.SendOptions{
-		ReplyTo:             message,
-		DisableNotification: true,
-	})
+	log.Info(message.Sender, "%s successful", message.Text)
 }
